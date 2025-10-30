@@ -1,0 +1,11 @@
+# Ignorar carpetas del sistema y temporales
+*.log
+__pycache__/
+.env
+venv/
+AppData/
+*.tmp
+*.cache
+.DS_Store
+#entorno virtual
+.env

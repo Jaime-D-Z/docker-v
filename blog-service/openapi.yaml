@@ -1,0 +1,191 @@
+openapi: 3.0.0
+info:
+  title: Blog Service API
+  description: API para gestionar posts y categorías de un blog
+  version: 1.0.0
+servers:
+  - url: http://localhost:8001
+    description: Servidor de desarrollo
+
+paths:
+  /api/categories/:
+    get:
+      summary: Lista todas las categorías activas
+      tags:
+        - Categories
+      responses:
+        '200':
+          description: Lista de categorías
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+
+  /api/posts/:
+    get:
+      summary: Lista posts paginados con búsqueda opcional
+      tags:
+        - Posts
+      parameters:
+        - name: search
+          in: query
+          description: Búsqueda en título y cuerpo del post
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Número de página
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Lista de posts paginados
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                  next:
+                    type: string
+                    nullable: true
+                  previous:
+                    type: string
+                    nullable: true
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PostList'
+
+  /api/posts/{id}/:
+    get:
+      summary: Obtiene el detalle de un post
+      tags:
+        - Posts
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detalle del post
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostDetail'
+        '404':
+          description: Post no encontrado
+
+  /healthz:
+    get:
+      summary: Health check del servicio
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Servicio saludable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheck'
+        '503':
+          description: Servicio con problemas
+
+components:
+  schemas:
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        slug:
+          type: string
+
+    Author:
+      type: object
+      properties:
+        id:
+          type: integer
+        display_name:
+          type: string
+
+    CategoryNested:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+
+    PostList:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        slug:
+          type: string
+        excerpt:
+          type: string
+        author:
+          $ref: '#/components/schemas/Author'
+        category:
+          $ref: '#/components/schemas/CategoryNested'
+        published_at:
+          type: string
+          format: date-time
+        views:
+          type: integer
+
+    PostDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        slug:
+          type: string
+        body:
+          type: string
+        author:
+          $ref: '#/components/schemas/Author'
+        category:
+          $ref: '#/components/schemas/CategoryNested'
+        published_at:
+          type: string
+          format: date-time
+        views:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    HealthCheck:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+        checks:
+          type: object
+          properties:
+            database:
+              type: string
+              enum: [ok, error]
+            redis:
+              type: string
+              enum: [ok, error]
+
